@@ -22,4 +22,7 @@ app.use(cookieParser());
 
 import adminRouter from "./routes/admin.routes.js";
 app.use("/api/v1/admin", adminRouter);
+app.use("/", (req, res) => {
+  res.redirect("https://www.google.co.in/");
+});
 export { app };
