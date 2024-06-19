@@ -11,6 +11,7 @@ connectDB()
       console.log("Error in running app ", err);
       process.exit(1);
     });
+
     app.listen(myport, () => {
       console.log(`Server is running at ${myport}`);
     });
