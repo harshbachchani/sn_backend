@@ -1,5 +1,6 @@
 import express from "express";
 import cors from "cors";
+import { allowCors } from "./middlewares/cors.middleware.js";
 import cookieParser from "cookie-parser";
 const app = express();
 const allowedOrigins = [
@@ -18,7 +19,7 @@ app.use(
     credentials: true,
   })
 );
-
+app.use(allowCors);
 app.use(
   express.json({
     limit: "16KB",
