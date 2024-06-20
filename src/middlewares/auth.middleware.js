@@ -1,9 +1,9 @@
 import { User } from "../models/user/user.model.js";
 import { ApiError } from "../utils/ApiError.js";
-import { asyncHandler } from "../utils/asyncHandler.js";
+import { asyncHandler } from "../utils/asynHandler.js";
 import jwt from "jsonwebtoken";
 
-export const verifyJWT = asyncHandler(async (req, _, next) => {
+const verifyJWT = asyncHandler(async (req, _, next) => {
   try {
     const token =
       req.cookies?.accessToken ||
@@ -23,9 +23,11 @@ export const verifyJWT = asyncHandler(async (req, _, next) => {
   }
 });
 
-export const verifyAdmin = asyncHandler(async (req, _, next) => {
-  if (req.user.role !== "admin") {
+const verifyAdmin = asyncHandler(async (req, _, next) => {
+  if (req.user.role !== "Admin") {
     throw new ApiError(403, "Forbidden: Admins only");
   }
   next();
 });
+
+export { verifyAdmin, verifyJWT };

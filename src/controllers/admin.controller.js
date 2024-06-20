@@ -86,4 +86,11 @@ const loginAdmin = asyncHandler(async (req, res) => {
       )
     );
 });
-export { registerAdmin, loginAdmin };
+
+const getData = asyncHandler(async (req, res) => {
+  if (!req.user) throw new ApiError(403, "Admin not found");
+  return res
+    .status(200)
+    .json(new ApiResponse(200, req.user, "Admin data fetched Successfully"));
+});
+export { registerAdmin, loginAdmin, getData };
