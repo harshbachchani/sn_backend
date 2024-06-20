@@ -22,5 +22,7 @@ app.use(cookieParser());
 
 import adminRouter from "./routes/admin.routes.js";
 app.use("/api/v1/admin", adminRouter);
-
+app.get("/", (req, res) => {
+  return res.send("Hello World");
+});
 export { app };
