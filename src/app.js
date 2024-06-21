@@ -10,7 +10,10 @@ app.use(
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
   })
 );
-
+app.use((req, res, next) => {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  next();
+});
 app.use(
   express.json({
     limit: "16KB",
