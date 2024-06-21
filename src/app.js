@@ -1,25 +1,16 @@
 import express from "express";
 import cors from "cors";
-import { allowCors } from "./middlewares/cors.middleware.js";
 import cookieParser from "cookie-parser";
 const app = express();
-const allowedOrigins = [
-  "https://sn-frontend-sigma.vercel.app/",
-  process.env.CORS_ORIGIN,
-];
+
 app.use(
   cors({
-    origin: (origin, callback) => {
-      if (allowedOrigins.includes(origin) || !origin) {
-        callback(null, true);
-      } else {
-        callback(new Error("Not allowed by CORS"));
-      }
-    },
+    origin: process.env.CORS_ORIGIN,
     credentials: true,
+    methods: "GET,POST,PUT,DELETE,PATCH",
   })
 );
-app.use(allowCors);
+
 app.use(
   express.json({
     limit: "16KB",
