@@ -11,7 +11,10 @@ app.use(
   })
 );
 app.use((req, res, next) => {
-  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader(
+    "Access-Control-Allow-Origin",
+    "https://sn-frontend-sigma.vercel.app/"
+  );
   next();
 });
 app.use(
