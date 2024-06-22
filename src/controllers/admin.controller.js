@@ -68,23 +68,17 @@ const loginAdmin = asyncHandler(async (req, res) => {
   if (!ispasswordmatch) throw new ApiError(403, "Invalid Admin Credentials");
   const { accesstoken } = await generateAccessToken(myadmin._id);
   const loggedInAdmin = await User.findById(myadmin._id).select("-password");
-  const options = {
-    httpOnly: true,
-    secure: true,
-  };
-  return res
-    .status(200)
-    .cookie("accessToken", accesstoken, options)
-    .json(
-      new ApiResponse(
-        200,
-        {
-          admin: loggedInAdmin,
-          accesstoken,
-        },
-        "Admin logged In Successfully"
-      )
-    );
+
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      {
+        admin: loggedInAdmin,
+        accesstoken,
+      },
+      "Admin logged In Successfully"
+    )
+  );
 });
 
 const getData = asyncHandler(async (req, res) => {

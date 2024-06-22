@@ -1,6 +1,5 @@
 import express from "express";
 import cors from "cors";
-import cookieParser from "cookie-parser";
 const app = express();
 
 app.use(
@@ -25,7 +24,6 @@ app.use(
 
 app.use(express.urlencoded({ extended: true, limit: "16KB" }));
 app.use(express.static("public"));
-app.use(cookieParser());
 
 import adminRouter from "./routes/admin.routes.js";
 app.use("/api/v1/admin", adminRouter);
