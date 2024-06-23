@@ -35,10 +35,12 @@ const accountSchema = new Schema(
     panno: {
       type: Schema.Types.ObjectId,
       ref: "Document",
+      required: [true, "Pan no is required"],
     },
     aadharno: {
       type: Schema.Types.ObjectId,
       ref: "Document",
+      required: [true, "Aadhar no is required"],
     },
     user: {
       type: Schema.Types.ObjectId,

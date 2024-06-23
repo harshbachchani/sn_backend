@@ -4,18 +4,17 @@ import { User } from "../models/user/user.model.js";
 import { sendOtp, verifyOtp } from "../utils/twilio.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 
-const generateAccessToken = async (userId) => {
+const generateAccessAndRefreshToken = async (userId) => {
   try {
     const user = await User.findById(userId);
-    if (!user) throw new ApiError("User not found", 404);
     const accesstoken = await user.generateAcessToken();
-    console.log(accesstoken);
-    return { accesstoken };
+    const refreshtoken = await user.generateRefreshToken();
+    return { accesstoken, refreshtoken };
   } catch (err) {
-    console.log(`The error is ${err}`);
+    console.log(err);
     throw new ApiError(
       500,
-      "Something Went Wrong while generating access token"
+      "Something Went Wrong while generating access and refresh token"
     );
   }
 };
@@ -54,7 +53,9 @@ const verifyUserOtp = asyncHandler(async (req, res) => {
     throw new ApiError(401, "OTP and phoneno are required");
   }
   try {
-    const user = await User.findOne({ phoneno });
+    const user = await User.findOne({ phoneno }).select(
+      "-refreshtoken -verified"
+    );
 
     if (!user) {
       throw new ApiError(400, "User not found");
@@ -64,14 +65,23 @@ const verifyUserOtp = asyncHandler(async (req, res) => {
       throw new ApiError(400, "Failed to verify OTP");
     }
     if (result.verficationcheck.status === "approved") {
+      const { accesstoken, refreshtoken } = await generateAccessAndRefreshToken(
+        user._id
+      );
       await User.findByIdAndUpdate(
         user._id,
-        { verified: true },
+        { verified: true, refreshToken: refreshtoken },
         { new: true, runValidators: true }
       );
       res
         .status(200)
-        .json(new ApiResponse(200, "", "User Registered Successfully"));
+        .json(
+          new ApiResponse(
+            200,
+            { user, accesstoken },
+            "User Registered Successfully"
+          )
+        );
     } else {
       throw new ApiError(400, "Invalid OTP");
     }
@@ -93,4 +103,9 @@ const resendOtp = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Failed to send OTP");
   }
 });
-export { registerUser, verifyUserOtp, resendOtp };
+
+const createAccount = asyncHandler(async (req, res) => {
+  const { address1, address2, city, state, zip, emp_type, income } = req.body;
+  res.json({ data: req?.user });
+});
+export { registerUser, verifyUserOtp, resendOtp, createAccount };

@@ -31,7 +31,9 @@ const userSchema = new Schema(
       type: Boolean,
       default: false,
     },
-
+    refreshToken: {
+      type: String,
+    },
     account: {
       type: Schema.Types.ObjectId,
       ref: "Account",
