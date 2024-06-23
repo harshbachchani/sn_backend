@@ -3,14 +3,13 @@ import bcrypt from "bcrypt";
 
 const documentSchema = new Schema(
   {
-    doc_id: {
+    docno: {
       type: String,
-      required: [true, "Document Id is required"],
+      required: [true, "Document Number is required"],
     },
-    doc_type: {
+    type: {
       type: String,
       required: [true, "Document Type is required"],
-      trim: true,
     },
     url: {
       type: String,
@@ -25,13 +24,13 @@ const documentSchema = new Schema(
 );
 
 documentSchema.pre("save", async function (next) {
-  if (!this.isModified("doc_id")) return next();
-  this.doc_id = await bcrypt.hash(this.doc_id, 10);
+  if (!this.isModified("docno")) return next();
+  this.docno = await bcrypt.hash(this.docno, 10);
   next();
 });
 
-documentSchema.methods.isDocIdCorrect = async function (doc_id) {
-  return await bcrypt.compare(doc_id, this.doc_id);
+documentSchema.methods.isDocMatch = async function (docno) {
+  return await bcrypt.compare(docno, this.docno);
 };
 
 export const Document = mongoose.model("Document", documentSchema);
