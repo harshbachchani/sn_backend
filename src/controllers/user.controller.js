@@ -37,7 +37,9 @@ const registerUser = asyncHandler(async (req, res) => {
 
     const result = await sendOtp(phoneno);
     if (result.success) {
-      res.status(200).json(new ApiResponse(200, "", "OTP sent successfully"));
+      res
+        .status(200)
+        .json(new ApiResponse(200, phoneno, "OTP sent successfully"));
     } else {
       throw new ApiError(400, "Failed to send OTP");
     }
@@ -98,7 +100,9 @@ const resendOtp = asyncHandler(async (req, res) => {
   }
   const result = await sendOtp(phoneno);
   if (result.success) {
-    res.status(200).json(new ApiResponse(200, "", "OTP Resent successfully"));
+    res
+      .status(200)
+      .json(new ApiResponse(200, phoneno, "OTP Resent successfully"));
   } else {
     throw new ApiError(400, "Failed to send OTP");
   }
