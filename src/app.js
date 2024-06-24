@@ -5,7 +5,7 @@ const app = express();
 console.log("Starting app and setting CORS...");
 app.use(
   cors({
-    origin: "https://sn-frontend-user.vercel.app",
+    origin: process.env.CORS_ORIGIN,
   })
 );
 app.use((req, res, next) => {
