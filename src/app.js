@@ -4,16 +4,10 @@ const app = express();
 
 app.use(
   cors({
-    origin: "https://sn-frontend-user.vercel.app/",
+    origin: "https://sn-frontend-user.vercel.app",
   })
 );
-app.use((req, res, next) => {
-  res.setHeader(
-    "Access-Control-Allow-Origin",
-    "https://sn-frontend-user.vercel.app/"
-  );
-  next();
-});
+
 app.use(
   express.json({
     limit: "16KB",
