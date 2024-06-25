@@ -288,17 +288,22 @@ const createAccount = asyncHandler(async (req, res, next) => {
 });
 
 const testingupload = asyncHandler(async (req, res, next) => {
-  const imagelocalpath = req.file?.path;
+  const imagelocalpath = req.file?.buffer;
   if (!imagelocalpath) {
-    return next(new ApiError(404, "Cannot get image local path"));
+    return next(new ApiError(404, "Cannot get Image Buffer"));
   }
-  const img = await uploadOnCloudinary(imagelocalpath);
-  if (!img) {
+  try {
+    const img = await uploadOnCloudinary(imagelocalpath);
+    return res.status(200).json(new ApiResponse(200, img));
+  } catch (error) {
     return next(
-      new ApiError(500, "Internal server error cannot upload img on clodinary")
+      new ApiError(
+        500,
+        "Internal server error: cannot upload img on Cloudinary",
+        error
+      )
     );
   }
-  return res.status(200).json(new ApiResponse(200, img));
 });
 export {
   registerUser,

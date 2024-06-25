@@ -7,22 +7,35 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-const uploadOnCloudinary = async (localFilePath) => {
-  try {
-    if (!localFilePath) return null;
-    //upload the file on clodinary
-    const response = await cloudinary.uploader.upload(localFilePath, {
-      resource_type: "auto",
-    });
-    //file has been uploaded successfully
-    fs.unlinkSync(localFilePath); //delete local copy of the image
-    return response;
-  } catch (error) {
-    console.log(`error in uploading image ${error}`);
-    fs.unlinkSync(localFilePath); //remove the locally saved temporary file
-    // as the upload operation failed
-    return null;
-  }
+const uploadOnCloudinary = async (buffer) => {
+  // try {
+  //   if (!localFilePath) return null;
+  //   //upload the file on clodinary
+  //   const response = await cloudinary.uploader.upload(localFilePath, {
+  //     resource_type: "auto",
+  //   });
+  //   //file has been uploaded successfully
+  //   fs.unlinkSync(localFilePath); //delete local copy of the image
+  //   return response;
+  // } catch (error) {
+  //   console.log(`error in uploading image ${error}`);
+  //   fs.unlinkSync(localFilePath); //remove the locally saved temporary file
+  //   // as the upload operation failed
+  //   return null;
+  // }
+  return new Promise((resolve, reject) => {
+    const stream = cloudinary.uploader.upload_stream(
+      { folder: "subandhan_nidhi" }, // Specify the folder name here
+      (error, result) => {
+        if (error) {
+          reject(error);
+        } else {
+          resolve(result);
+        }
+      }
+    );
+    stream.end(buffer);
+  });
 };
 
 function getimagepublicid(url) {
