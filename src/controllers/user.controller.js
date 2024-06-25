@@ -5,6 +5,10 @@ import { Account } from "../models/user/account.model.js";
 import { sendOtp, verifyOtp } from "../utils/twilio.js";
 import { Document } from "../models/user/document.model.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
+import {
+  uploadOnCloudinary,
+  deletefromCloudinary,
+} from "../utils/cloudinary.js";
 import jwt from "jsonwebtoken";
 const generateAccessAndRefreshToken = async (userId) => {
   try {
@@ -195,8 +199,6 @@ const createAccount = asyncHandler(async (req, res, next) => {
     income,
     panno,
     aadharno,
-    panurl,
-    aadharurl,
   } = req.body;
   if (
     !(address1 || address2 || city || state || zip || emp_type || income) ||
@@ -206,25 +208,58 @@ const createAccount = asyncHandler(async (req, res, next) => {
   ) {
     return next(new ApiError(404, "All Fields Are required"));
   }
-  if (!(panno || aadharno || panurl || aadharurl))
+  if (!(panno || aadharno))
     return next(new ApiError(404, "Pan and Aadhar details are required"));
   const user = req?.user;
   if (!user) return next(404, "Cannot find user");
+  const panlocalpath = req.files?.pan[0]?.path;
+  const aadharlocalpath = req.files?.aadhar[0]?.path;
+  const photolocalpath = req.files?.photo[0]?.path;
+  const signaturelocalpath = req.files?.signature[0]?.path;
+  if (
+    !(panlocalpath || aadharlocalpath || photolocalpath || signaturelocalpath)
+  ) {
+    return next(new ApiError(404, "Cannot get localpath of uploaded files"));
+  }
+  const pan = await uploadOnCloudinary(panlocalpath);
+  if (!pan) {
+    return next(
+      new ApiError(500, "Server Error cannot upload Pan file on clodinary")
+    );
+  }
+  const aadhar = await uploadOnCloudinary(aadharlocalpath);
+  if (!aadhar) {
+    return next(
+      new ApiError(500, "Server Error cannot upload Aadhar file on clodinary")
+    );
+  }
+  const photo = await uploadOnCloudinary(photolocalpath);
+  if (!photo) {
+    return next(
+      new ApiError(500, "Server Error cannot upload Photo file on clodinary")
+    );
+  }
+  const signature = await uploadOnCloudinary(signaturelocalpath);
+  if (!signature) {
+    return next(
+      new ApiError(500, "Server Error cannot upload Signture file on clodinary")
+    );
+  }
   try {
-    const pan = await Document.create({
+    const pandetail = await Document.create({
       docno: panno,
       type: "Pan",
-      url: panurl,
+      url: pan.url,
       user: user._id,
     });
-    if (!pan) return next(new ApiError(500, "Internal Server Error "));
-    const aadhar = await Document.create({
+    if (!pandetail) return next(new ApiError(500, "Internal Server Error "));
+    const aadhardetail = await Document.create({
       docno: aadharno,
       type: "Aadhar",
-      url: aadharurl,
+      url: aadhar.url,
       user: user._id,
     });
-    if (!aadhar) return next(new ApiError(500, "Internal Server Error "));
+    if (!aadhardetail) return next(new ApiError(500, "Internal Server Error "));
     const detail = {
       address1,
       address2,
@@ -233,8 +268,8 @@ const createAccount = asyncHandler(async (req, res, next) => {
       zip,
       emp_type,
       income,
-      panno: pan._id,
-      aadharno: aadhar._id,
+      panno: pandetail._id,
+      aadharno: aadhardetail._id,
       user: user._id,
     };
     await Account.create(detail)
@@ -252,6 +287,19 @@ const createAccount = asyncHandler(async (req, res, next) => {
   }
 });
 
+const testingupload = asyncHandler(async (req, res, next) => {
+  const imagelocalpath = req.file?.path;
+  if (!imagelocalpath) {
+    return next(new ApiError(404, "Cannot get image local path"));
+  }
+  const img = await uploadOnCloudinary(imagelocalpath);
+  if (!img) {
+    return next(
+      new ApiError(500, "Internal server error cannot upload img on clodinary")
+    );
+  }
+  return res.status(200).json(new ApiResponse(200, img));
+});
 export {
   registerUser,
   verifyUserOtp,
@@ -259,4 +307,5 @@ export {
   createAccount,
   refreshAcessToken,
   loginUser,
+  testingupload,
 };

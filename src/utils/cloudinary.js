@@ -18,6 +18,7 @@ const uploadOnCloudinary = async (localFilePath) => {
     fs.unlinkSync(localFilePath); //delete local copy of the image
     return response;
   } catch (error) {
+    console.log(`error in uploading image ${error}`);
     fs.unlinkSync(localFilePath); //remove the locally saved temporary file
     // as the upload operation failed
     return null;
