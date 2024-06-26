@@ -42,9 +42,18 @@ const accountSchema = new Schema(
       ref: "Document",
       required: [true, "Aadhar no is required"],
     },
+    signature: {
+      type: String,
+      required: [true, "Signature is required"],
+    },
+    photo: {
+      type: String,
+      required: [true, "Photo is required"],
+    },
     user: {
       type: Schema.Types.ObjectId,
       ref: "User",
+      required: [true, "User id is required"],
     },
   },
   { timestamps: true }

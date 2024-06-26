@@ -20,22 +20,10 @@ router.route("/login").post(loginUser);
 router.route("/account").post(
   verifyJWT,
   upload.fields([
-    {
-      name: "pan",
-      maxCount: 1,
-    },
-    {
-      name: "aadhar",
-      maxCount: 1,
-    },
-    {
-      name: "photo",
-      maxCount: 1,
-    },
-    {
-      name: "signature",
-      maxCount: 1,
-    },
+    { name: "pan", maxCount: 1 },
+    { name: "aadhar", maxCount: 1 },
+    { name: "photo", maxCount: 1 },
+    { name: "signature", maxCount: 1 },
   ]),
   createAccount
 );

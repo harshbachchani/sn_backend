@@ -212,10 +212,10 @@ const createAccount = asyncHandler(async (req, res, next) => {
     return next(new ApiError(404, "Pan and Aadhar details are required"));
   const user = req?.user;
   if (!user) return next(404, "Cannot find user");
-  const panlocalpath = req.files?.pan[0]?.path;
-  const aadharlocalpath = req.files?.aadhar[0]?.path;
-  const photolocalpath = req.files?.photo[0]?.path;
-  const signaturelocalpath = req.files?.signature[0]?.path;
+  const panlocalpath = req.files?.pan?.[0].buffer;
+  const aadharlocalpath = req.files?.aadhar?.[0].buffer;
+  const photolocalpath = req.files?.photo?.[0].buffer;
+  const signaturelocalpath = req.files?.signature?.[0].buffer;
   if (
     !(panlocalpath || aadharlocalpath || photolocalpath || signaturelocalpath)
   ) {
@@ -252,7 +252,7 @@ const createAccount = asyncHandler(async (req, res, next) => {
       url: pan.url,
       user: user._id,
     });
-    if (!pandetail) return next(new ApiError(500, "Internal Server Error "));
+    if (!pandetail) return next(new ApiError(500, "Internal Server Error"));
     const aadhardetail = await Document.create({
       docno: aadharno,
       type: "Aadhar",
@@ -270,6 +270,8 @@ const createAccount = asyncHandler(async (req, res, next) => {
       income,
       panno: pandetail._id,
       aadharno: aadhardetail._id,
+      signature: signature.url,
+      photo: photo.url,
       user: user._id,
     };
     await Account.create(detail)
@@ -294,6 +296,9 @@ const testingupload = asyncHandler(async (req, res, next) => {
   }
   try {
     const img = await uploadOnCloudinary(imagelocalpath);
+    if (!img) {
+      return next(new ApiError(404, "Cannot upload image on clodinary"));
+    }
     return res.status(200).json(new ApiResponse(200, img));
   } catch (error) {
     return next(
