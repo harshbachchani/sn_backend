@@ -76,7 +76,7 @@ const verifyUserOtp = asyncHandler(async (req, res, next) => {
     if (!user) {
       return next(new ApiError(400, "User not found"));
     }
-    const result = await verifyOtp(phoneno, otp);
+    const result = await verifyOtp(user.phoneno, otp);
     if (!result.success) {
       return next(new ApiError(500, "Failed to verify OTP"));
     }
