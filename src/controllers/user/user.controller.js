@@ -38,30 +38,32 @@ const registerUser = asyncHandler(async (req, res, next) => {
   const xuser = await User.findOne({
     $or: [{ phoneno: phoneno }, { email: email }],
   });
-  if (!xuser || (xuser.phoneno == phoneno && xuser.email == email)) {
-    try {
-      const result = await sendOtp(phoneno);
-      if (result.success) {
-        const user = await User.findOneAndUpdate(
-          { phoneno },
-          { fullname, email, dob, phoneno, verified: false },
-          { upsert: true, new: true, setDefaultsOnInsert: true }
+  if (xuser) {
+    return next(
+      new ApiError(400, "User already with same email or phoneno exists")
+    );
+  }
+
+  try {
+    const result = await sendOtp(phoneno);
+    if (result.success) {
+      const user = await User.findOneAndUpdate(
+        { phoneno },
+        { fullname, email, dob, phoneno, verified: false },
+        { upsert: true, new: true, setDefaultsOnInsert: true }
+      );
+      if (!user) return next(new ApiError(500, "Cannot create user "));
+      res
+        .status(200)
+        .json(
+          new ApiResponse(200, { userId: user._id }, "OTP sent successfully")
         );
-        if (!user) return next(new ApiError(500, "Cannot create user "));
-        res
-          .status(200)
-          .json(
-            new ApiResponse(200, { userId: user._id }, "OTP sent successfully")
-          );
-      } else {
-        return next(new ApiError(400, "Failed to send OTP", result.error));
-      }
-    } catch (error) {
-      console.error(`Failed to send OTP: ${error.message}`);
-      return next(new ApiError(500, "Internal Server Error", error));
+    } else {
+      return next(new ApiError(400, "Failed to send OTP", result.error));
     }
-  } else {
-    return next(new ApiError(401, "User phoneno and email do not matched"));
+  } catch (error) {
+    console.error(`Failed to send OTP: ${error.message}`);
+    return next(new ApiError(500, "Internal Server Error", error));
   }
 });
 
