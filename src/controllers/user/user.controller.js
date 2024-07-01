@@ -40,7 +40,7 @@ const registerUser = asyncHandler(async (req, res, next) => {
   });
   if (xuser) {
     return next(
-      new ApiError(400, "User already with same email or phoneno exists")
+      new ApiError(400, "User already exists with same email or phoneno exists")
     );
   }
 
@@ -122,7 +122,13 @@ const resendOtp = asyncHandler(async (req, res, next) => {
       .status(200)
       .json(new ApiResponse(200, phoneno, "OTP Resent successfully"));
   } else {
-    return next(new ApiError(500, "Internal Server Error Failed to send OTP"));
+    return next(
+      new ApiError(
+        500,
+        "Internal Server Error Failed to send OTP",
+        result.error
+      )
+    );
   }
 });
 
