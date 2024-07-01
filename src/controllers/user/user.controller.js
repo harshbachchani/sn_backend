@@ -110,25 +110,29 @@ const verifyUserOtp = asyncHandler(async (req, res, next) => {
 });
 
 const resendOtp = asyncHandler(async (req, res, next) => {
-  const { userId } = req.body;
-  if (!userId) return next(new ApiError(400, "UserId is required"));
-  const user = await User.findById(userId);
-  if (!user) {
-    return next(new ApiError(400, "User not found"));
-  }
-  const result = await sendOtp(phoneno);
-  if (result.success) {
-    res
-      .status(200)
-      .json(new ApiResponse(200, phoneno, "OTP Resent successfully"));
-  } else {
-    return next(
-      new ApiError(
-        500,
-        "Internal Server Error Failed to send OTP",
-        result.error
-      )
-    );
+  try {
+    const { userId } = req.body;
+    if (!userId) return next(new ApiError(400, "UserId is required"));
+    const user = await User.findById(userId);
+    if (!user) {
+      return next(new ApiError(400, "User not found"));
+    }
+    const result = await sendOtp(user.phoneno);
+    if (result.success) {
+      res
+        .status(200)
+        .json(new ApiResponse(200, phoneno, "OTP Resent successfully"));
+    } else {
+      return next(
+        new ApiError(
+          500,
+          "Internal Server Error Failed to send OTP",
+          result.error
+        )
+      );
+    }
+  } catch (error) {
+    return next(new ApiError(400, "Something Went Wrong", error));
   }
 });
 
