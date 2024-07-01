@@ -8,7 +8,7 @@ import {
   verifyUserOtp,
   loginUser,
   testingupload,
-} from "../controllers/user.controller.js";
+} from "../controllers/user/user.controller.js";
 import { upload } from "../middlewares/multer.middleware.js";
 
 const router = Router();

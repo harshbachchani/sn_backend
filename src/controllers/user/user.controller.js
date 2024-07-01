@@ -1,14 +1,14 @@
-import { asyncHandler } from "../utils/asynHandler.js";
-import { ApiError } from "../utils/ApiError.js";
-import { User } from "../models/user/user.model.js";
-import { Account } from "../models/user/account.model.js";
-import { sendOtp, verifyOtp } from "../utils/twilio.js";
-import { Document } from "../models/user/document.model.js";
-import { ApiResponse } from "../utils/ApiResponse.js";
+import { asyncHandler } from "../../utils/asynHandler.js";
+import { ApiError } from "../../utils/ApiError.js";
+import { User } from "../../models/user/user.model.js";
+import { Account } from "../../models/user/account.model.js";
+import { sendOtp, verifyOtp } from "../../utils/twilio.js";
+import { Document } from "../../models/user/document.model.js";
+import { ApiResponse } from "../../utils/ApiResponse.js";
 import {
   uploadOnCloudinary,
   deletefromCloudinary,
-} from "../utils/cloudinary.js";
+} from "../../utils/cloudinary.js";
 import jwt from "jsonwebtoken";
 const generateAccessAndRefreshToken = async (userId) => {
   try {
@@ -212,6 +212,9 @@ const createAccount = asyncHandler(async (req, res, next) => {
     return next(new ApiError(404, "Pan and Aadhar details are required"));
   const user = req?.user;
   if (!user) return next(404, "Cannot find user");
+  if (user.account !== "") {
+    return next(new ApiError(404, "User already has an account"));
+  }
   const panlocalpath = req.files?.pan?.[0].buffer;
   const aadharlocalpath = req.files?.aadhar?.[0].buffer;
   const photolocalpath = req.files?.photo?.[0].buffer;
