@@ -10,6 +10,7 @@ import {
   deletefromCloudinary,
 } from "../../utils/cloudinary.js";
 import jwt from "jsonwebtoken";
+import mongoose from "mongoose";
 const generateAccessAndRefreshToken = async (userId) => {
   try {
     const user = await User.findById(userId);
@@ -123,7 +124,9 @@ const resendOtp = asyncHandler(async (req, res, next) => {
     if (result.success) {
       return res
         .status(200)
-        .json(new ApiResponse(200, phoneno, "OTP Resent successfully"));
+        .json(
+          new ApiResponse(200, { userId: user._id }, "OTP Resent successfully")
+        );
     } else {
       return next(
         new ApiError(
