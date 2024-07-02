@@ -8,6 +8,7 @@ import { ApiResponse } from "../../utils/ApiResponse.js";
 
 const getAllUsers = asyncHandler(async (req, res, next) => {
   try {
+    console.log("Hello");
     const users = await User.find().select("_id phoneno fullname").populate({
       path: "account",
       select: "address1 address2",
@@ -101,7 +102,7 @@ const getUserDetail = asyncHandler(async (req, res, next) => {
     ]);
     return res
       .status(200)
-      .json(new ApiResponse(200, result, "User Details get successfully"));
+      .json(new ApiResponse(200, result[0], "User Details get successfully"));
   } catch (error) {
     return next(new ApiError(400, "Cannot get user details", error));
   }

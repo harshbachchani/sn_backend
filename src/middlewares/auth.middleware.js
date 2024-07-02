@@ -27,7 +27,7 @@ const verifyAgentJWT = asyncHandler(async (req, _, next) => {
     if (!token) throw new ApiError(401, "Unauthorized request");
     const decodedtoken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
     const agent = await Agent.findById(decodedtoken?._id).select(
-      "-verified -refreshToken -role -password"
+      "-verified -refreshToken -password"
     );
 
     if (!agent) throw new ApiError(401, "Invalid Access Token");
@@ -41,7 +41,7 @@ const verifyAgentJWT = asyncHandler(async (req, _, next) => {
 
 const verifyAdmin = asyncHandler(async (req, _, next) => {
   if (req.agent.role !== "Admin") {
-    return new ApiError(403, "Forbidden: Admins only");
+    return next(new ApiError(403, "Forbidden: Admins only"));
   }
   next();
 });

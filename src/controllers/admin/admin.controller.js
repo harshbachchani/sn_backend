@@ -16,10 +16,7 @@ const generateAccessToken = async (userId) => {
   } catch (err) {
     return {
       success: false,
-      error: {
-        msg: "Something Went Wrong while generating access token",
-        error: err,
-      },
+      error: err,
     };
   }
 };
@@ -81,32 +78,54 @@ const registerAdmin = asyncHandler(async (req, res, next) => {
   }
 });
 
-const loginAdmin = asyncHandler(async (req, res) => {
-  const { email, password } = req.body;
-  if (!email) {
-    throw new ApiError(400, "email is required");
+const loginAdmin = asyncHandler(async (req, res, next) => {
+  const { userId, password } = req.body;
+  if (!(password || userId)) {
+    return next(new ApiError(400, "All field are required"));
   }
-  const myadmin = await User.findOne({
-    $or: [{ email }],
-  });
-  if (!(myadmin || myadmin.role !== "Admin")) {
-    throw new ApiError(404, "Admin does not exist");
+  if (!mongoose.Types.ObjectId.isValid(userId)) {
+    return next(new ApiError(400, "Invalid User Id"));
   }
-  const ispasswordmatch = await myadmin.isPassWordCorrect(password);
-  if (!ispasswordmatch) throw new ApiError(403, "Invalid Admin Credentials");
-  const { accesstoken } = await generateAccessToken(myadmin._id);
-  const loggedInAdmin = await User.findById(myadmin._id).select("-password");
-
-  return res.status(200).json(
-    new ApiResponse(
-      200,
-      {
-        admin: loggedInAdmin,
-        accesstoken,
-      },
-      "Admin logged In Successfully"
-    )
-  );
+  try {
+    const myadmin = await Agent.findById(userId);
+    if (!(myadmin || myadmin.role != "Admin")) {
+      return next(new ApiError(404, "Admin do not exist"));
+    }
+    const ispasswordmatch = await myadmin.isPassWordCorrect(password);
+    if (!ispasswordmatch) return next(400, "Invalid Credentials");
+    const result = await generateAccessToken(myadmin._id);
+    if (!result.success) {
+      return next(
+        new ApiError(
+          500,
+          "Cannot generate access and refresh token ",
+          result.error
+        )
+      );
+    } else {
+      const refreshToken = result.data.refreshToken;
+      const accessToken = result.data.accessToken;
+      const loggedInAdmin = await Agent.findByIdAndUpdate(
+        myadmin._id,
+        {
+          refreshToken: refreshToken,
+        },
+        { new: true }
+      ).select("-password -role ");
+      return res.status(200).json(
+        new ApiResponse(
+          200,
+          {
+            admin: loggedInAdmin,
+            accessToken,
+          },
+          "Admin logged In Successfully"
+        )
+      );
+    }
+  } catch (error) {
+    return next(new ApiError(500, "Internal Server Error", error));
+  }
 });
 
 const getData = asyncHandler(async (req, res) => {

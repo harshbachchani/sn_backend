@@ -229,7 +229,6 @@ const createAccount = asyncHandler(async (req, res, next) => {
     return next(new ApiError(404, "Pan and Aadhar details are required"));
   const user = req?.user;
   if (!user) return next(404, "Cannot find user");
-  console.log(user.account);
   if (user.account) {
     return next(new ApiError(404, "User already has an account"));
   }
