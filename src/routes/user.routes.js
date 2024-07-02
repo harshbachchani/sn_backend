@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { verifyJWT } from "../middlewares/auth.middleware.js";
+import { verifyUserJWT } from "../middlewares/auth.middleware.js";
 import {
   createAccount,
   refreshAcessToken,
@@ -18,7 +18,7 @@ router.route("/verifyotp").post(verifyUserOtp);
 router.route("/resendotp").post(resendOtp);
 router.route("/login").post(loginUser);
 router.route("/account").post(
-  verifyJWT,
+  verifyUserJWT,
   upload.fields([
     { name: "pan", maxCount: 1 },
     { name: "aadhar", maxCount: 1 },

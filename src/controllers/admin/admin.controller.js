@@ -4,53 +4,81 @@ import { User } from "../../models/user/user.model.js";
 import { ApiResponse } from "../../utils/ApiResponse.js";
 import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
+import { Agent } from "../../models/user/agent.model.js";
 
 const generateAccessToken = async (userId) => {
   try {
-    const user = await User.findById(userId);
-    if (!user) throw new ApiError("User not found", 404);
-    const accesstoken = await user.generateAcessToken();
-    console.log(accesstoken);
-    return { accesstoken };
+    const agent = await Agent.findById(userId);
+    if (!agent) throw new ApiError("Admin not found", 404);
+    const accessToken = await agent.generateAcessToken();
+    const refreshToken = await agent.generateRefreshToken();
+    return { success: true, data: { accessToken, refreshToken } };
   } catch (err) {
-    console.log(`The error is ${err}`);
-    throw new ApiError(
-      500,
-      "Something Went Wrong while generating access token"
-    );
+    return {
+      success: false,
+      error: {
+        msg: "Something Went Wrong while generating access token",
+        error: err,
+      },
+    };
   }
 };
 
-const registerAdmin = asyncHandler(async (req, res) => {
-  const { fullname, email, phoneno, address, password } = req.body;
+const registerAdmin = asyncHandler(async (req, res, next) => {
+  const {
+    fullName,
+    email,
+    phoneNo,
+    dob,
+    address,
+    password,
+    panNo,
+    aadharNo,
+    voterId,
+  } = req.body;
   if (
-    [fullname, email, phoneno, address, password].some(
-      (field) => field?.trim() === ""
+    !(
+      fullName ||
+      email ||
+      phoneNo ||
+      dob ||
+      address ||
+      panNo ||
+      aadharNo ||
+      voterId
     )
   ) {
     throw new ApiError(400, "All fields are required");
   }
-  const existedUser = await User.findOne({ $or: [{ email }] });
-  if (existedUser) {
-    throw new ApiError(409, "Admin with this email already exist");
-  }
-  const myadmin = await User.create({
-    fullname: fullname,
-    email: email,
-    phoneno: phoneno,
-    address: address,
-    password: password,
-  });
-  const createdadmin = await User.findById(myadmin._id).select("-password ");
-  if (!createdadmin) {
-    throw new ApiError(
-      500,
-      "Something Went Wrong while registering the admin!!"
+
+  try {
+    const myadmin = await Agent.create({
+      fullName: fullName,
+      email: email,
+      phoneNo: phoneNo,
+      address: address,
+      password: password,
+      dob: dob,
+      panNo: panNo,
+      aadharNo: aadharNo,
+      voterId: voterId,
+      role: "Admin",
+      verified: true,
+    });
+    const createdadmin = await Agent.findById(myadmin._id).select(
+      "-password -role -verified -refreshToken"
     );
+    if (!createdadmin) {
+      return next(
+        new ApiError(500, "Something went wrong while registering admin")
+      );
+    }
+    return res
+      .status(200)
+      .json(new ApiResponse(200, createdadmin, "Admin Created Successfully"));
+  } catch (error) {
+    return next(new ApiError(400, "Error while registering admin", error));
   }
-  return res
-    .status(201)
-    .json(new ApiResponse(200, createdadmin, "Admin Created Successfully"));
 });
 
 const loginAdmin = asyncHandler(async (req, res) => {
