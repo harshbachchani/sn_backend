@@ -112,14 +112,16 @@ const verifyUserOtp = asyncHandler(async (req, res, next) => {
 const resendOtp = asyncHandler(async (req, res, next) => {
   try {
     const { userId } = req.body;
-    if (!userId) return next(new ApiError(400, "UserId is required"));
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      return next(new ApiError(400, "Invalid User Id"));
+    }
     const user = await User.findById(userId);
     if (!user) {
       return next(new ApiError(400, "User not found"));
     }
     const result = await sendOtp(user.phoneno);
     if (result.success) {
-      res
+      return res
         .status(200)
         .json(new ApiResponse(200, phoneno, "OTP Resent successfully"));
     } else {
