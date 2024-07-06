@@ -50,6 +50,11 @@ const accountSchema = new Schema(
       type: String,
       required: [true, "Photo is required"],
     },
+    status: {
+      type: String,
+      enum: ["Pending", "Verified"],
+      default: "Pending",
+    },
     user: {
       type: Schema.Types.ObjectId,
       ref: "User",

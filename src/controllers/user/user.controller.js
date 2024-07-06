@@ -297,7 +297,15 @@ const createAccount = asyncHandler(async (req, res, next) => {
     await Account.create(detail)
       .then(async (account) => {
         await User.findByIdAndUpdate(user._id, { account: account._id });
-        return res.status(200).json(new ApiResponse(200, account));
+        return res
+          .status(200)
+          .json(
+            new ApiResponse(
+              200,
+              account,
+              "Account creation request has been sent to admin"
+            )
+          );
       })
       .catch((err) => {
         return next(
@@ -309,27 +317,6 @@ const createAccount = asyncHandler(async (req, res, next) => {
   }
 });
 
-const testingupload = asyncHandler(async (req, res, next) => {
-  const imagelocalpath = req.file?.buffer;
-  if (!imagelocalpath) {
-    return next(new ApiError(404, "Cannot get Image Buffer"));
-  }
-  try {
-    const img = await uploadOnCloudinary(imagelocalpath);
-    if (!img) {
-      return next(new ApiError(404, "Cannot upload image on clodinary"));
-    }
-    return res.status(200).json(new ApiResponse(200, img));
-  } catch (error) {
-    return next(
-      new ApiError(
-        500,
-        "Internal server error: cannot upload img on Cloudinary",
-        error
-      )
-    );
-  }
-});
 export {
   registerUser,
   verifyUserOtp,
@@ -337,5 +324,4 @@ export {
   createAccount,
   refreshAcessToken,
   loginUser,
-  testingupload,
 };

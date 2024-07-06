@@ -7,7 +7,6 @@ import {
   resendOtp,
   verifyUserOtp,
   loginUser,
-  testingupload,
 } from "../controllers/user/user.controller.js";
 import { upload } from "../middlewares/multer.middleware.js";
 
@@ -28,5 +27,4 @@ router.route("/account").post(
   createAccount
 );
 router.route("/refreshtoken").post(refreshAcessToken);
-router.route("/testing").post(upload.single("image"), testingupload);
 export default router;

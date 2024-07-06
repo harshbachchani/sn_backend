@@ -5,21 +5,7 @@ import { Account } from "../../models/user/account.model.js";
 import { User } from "../../models/user/user.model.js";
 import { Document } from "../../models/user/document.model.js";
 import { ApiResponse } from "../../utils/ApiResponse.js";
-
-const getAllUsers = asyncHandler(async (req, res, next) => {
-  try {
-    console.log("Hello");
-    const users = await User.find().select("_id phoneno fullname").populate({
-      path: "account",
-      select: "address1 address2",
-    });
-    return res
-      .status(200)
-      .json(new ApiResponse(200, users, "User fetched Successfully"));
-  } catch (error) {
-    return next(new ApiError(400, "Cannot fetch Users", error));
-  }
-});
+import { deletefromCloudinary } from "../../utils/cloudinary.js";
 
 const getUserDetail = asyncHandler(async (req, res, next) => {
   const { userId } = req.params;
@@ -107,4 +93,130 @@ const getUserDetail = asyncHandler(async (req, res, next) => {
     return next(new ApiError(400, "Cannot get user details", error));
   }
 });
-export { getAllUsers, getUserDetail };
+
+const getUserAccountRequests = asyncHandler(async (req, res, next) => {
+  try {
+    const { status } = req.query;
+    if (!status)
+      return next(new ApiError(400, "Status of account is required"));
+    const users = await User.aggregate([
+      {
+        $lookup: {
+          from: "accounts",
+          localField: "account",
+          foreignField: "_id",
+          as: "accountInfo",
+        },
+      },
+      {
+        $unwind: "$accountInfo",
+      },
+      {
+        $match: { "accountInfo.status": status },
+      },
+      {
+        $project: {
+          _id: 1,
+          phoneno: 1,
+          email: 1,
+          dob: 1,
+          fullname: 1,
+          "accountInfo.address1": 1,
+          "accountInfo.address2": 1,
+          "accountInfo.city": 1,
+        },
+      },
+    ]);
+    return res
+      .status(200)
+      .json(new ApiResponse(200, users[0], "User fetched Successfully"));
+  } catch (error) {
+    return next(new ApiError(400, "Cannot get requests", error));
+  }
+});
+
+const verifyAccountRequest = asyncHandler(async (req, res, next) => {
+  const { userId } = req.params;
+  if (!mongoose.Types.ObjectId.isValid(userId)) {
+    return next(new ApiError(400, "Not a valid user id"));
+  }
+  try {
+    const account = await Account.findOne({
+      user: userId,
+    });
+    if (!account) return next(new ApiError(400, "User don't have any account"));
+    if (account.status === "Verified")
+      return next(new ApiError(400, "Account already Verified"));
+    await Account.findByIdAndUpdate(
+      account._id,
+      {
+        status: "Verified",
+      },
+      { new: true }
+    )
+      .then((data) => {
+        return res
+          .status(200)
+          .json(
+            new ApiResponse(200, data, "Account has been verified successfully")
+          );
+      })
+      .catch((e) => {
+        console.log(e);
+        return next(new ApiError(500, "Error while verifying account", e));
+      });
+  } catch (error) {
+    return next(new ApiError(500, "Internal Server error", error));
+  }
+});
+const deleteUserAccount = asyncHandler(async (req, res, next) => {
+  const { userId } = req.params;
+  if (!mongoose.Types.ObjectId.isValid(userId)) {
+    return next(new ApiError(400, "Not a valid user id"));
+  }
+  try {
+    const account = await Account.findOne({ user: userId });
+    if (account.status == "Verified")
+      return next(new ApiError(404, "User is verified cannot delete"));
+    await Account.findByIdAndDelete(account._id);
+    if (!account) return next(new ApiError(400, "Account not exists"));
+    const signatureUrl = account.signature;
+    const photourl = account.photo;
+    const aadhar = await Document.findByIdAndDelete(account.aadharno);
+    const pan = await Document.findByIdAndDelete(account.panno);
+    await Document.findByIdAndDelete(account.aadhar);
+    const aadharurl = aadhar.url;
+    const panurl = pan.url;
+    const user = await User.findByIdAndUpdate(
+      userId,
+      {
+        $unset: { account: "" },
+      },
+      { new: true }
+    );
+
+    const resultphoto = await deletefromCloudinary([photourl]);
+    const resultaadhar = await deletefromCloudinary([aadharurl]);
+    const resultpan = await deletefromCloudinary([panurl]);
+    const resultsignature = await deletefromCloudinary([signatureUrl]);
+    if (!(resultaadhar || resultphoto || resultpan || resultsignature))
+      console.log("error in deleting from clodinary");
+    return res
+      .status(200)
+      .json(
+        new ApiResponse(
+          200,
+          account,
+          "User Saving Account removed successfully"
+        )
+      );
+  } catch (error) {
+    return next(new ApiError(500, "Internal Server error", error));
+  }
+});
+export {
+  getUserDetail,
+  verifyAccountRequest,
+  getUserAccountRequests,
+  deleteUserAccount,
+};

@@ -24,18 +24,18 @@ const verifyUserJWT = asyncHandler(async (req, _, next) => {
 const verifyAgentJWT = asyncHandler(async (req, _, next) => {
   try {
     const token = req.header("Authorization")?.replace("Bearer ", "");
-    if (!token) throw new ApiError(401, "Unauthorized request");
+    if (!token) return next(new ApiError(401, "Unauthorized request"));
     const decodedtoken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
     const agent = await Agent.findById(decodedtoken?._id).select(
       "-verified -refreshToken -password"
     );
 
-    if (!agent) throw new ApiError(401, "Invalid Access Token");
+    if (!agent) return next(new ApiError(401, "Invalid Access Token"));
 
     req.agent = agent;
     next();
   } catch (error) {
-    throw new ApiError(401, error?.message || "Invalid Access Token");
+    return next(new ApiError(401, error?.message || "Invalid Access Token"));
   }
 });
 

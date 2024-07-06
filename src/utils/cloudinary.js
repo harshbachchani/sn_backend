@@ -53,7 +53,6 @@ const deletefromCloudinary = async (clodinaryfilePaths, resource_type) => {
   try {
     let paths = [];
     for (let x of clodinaryfilePaths) {
-      console.log(x);
       paths.push(getimagepublicid(x));
     }
     // const public_id = getimagepublicid(clodinaryfilePath);
