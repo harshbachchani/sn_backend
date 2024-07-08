@@ -129,7 +129,7 @@ const getUserAccountRequests = asyncHandler(async (req, res, next) => {
     ]);
     return res
       .status(200)
-      .json(new ApiResponse(200, users[0], "User fetched Successfully"));
+      .json(new ApiResponse(200, users, "User fetched Successfully"));
   } catch (error) {
     return next(new ApiError(400, "Cannot get requests", error));
   }

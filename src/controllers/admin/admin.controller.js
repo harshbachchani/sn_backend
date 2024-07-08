@@ -135,4 +135,47 @@ const getData = asyncHandler(async (req, res) => {
     .status(200)
     .json(new ApiResponse(200, req.agent, "Admin data fetched Successfully"));
 });
-export { registerAdmin, loginAdmin, getData };
+
+const refreshAccessToken = asyncHandler(async (req, res, next) => {
+  const incomingtoken = req.body.refreshToken;
+  if (!incomingrefreshtoken) {
+    return next(new ApiError(401, "Unauthorized request"));
+  }
+  try {
+    const decodedtoken = await jwt.verify(
+      incomingtoken,
+      process.env.REFRESH_TOKEN_SECRET
+    );
+
+    const myadmin = await Agent.findById(decodedtoken?._id);
+    if (!myadmin) return next(new ApiError(401, "Invalid Refresh Token"));
+    if (incomingtoken !== myadmin.refreshToken) {
+      return next(new ApiError(401, "Refresh token is expired or used"));
+    }
+    const result = await generateAccessToken(myadmin._id);
+    if (!result.success) {
+      return next(new ApiError(500, "Internal Server Error", result.error));
+    }
+
+    res.setHeader("Authorization", `Bearer ${result.data.accessToken}`);
+    await Agent.findByIdAndUpdate(myagent._id, {
+      refreshToken: result.data.refreshToken,
+    });
+
+    return res.status(200).json(
+      new ApiResponse(
+        200,
+        {
+          accesstoken: result.data.accessToken,
+          refreshtoken: result.data.refreshToken,
+        },
+        "Access Token refreshed successfully"
+      )
+    );
+  } catch (error) {
+    return next(
+      new ApiError(401, error?.message || "Invalid Refresh Token", error)
+    );
+  }
+});
+export { registerAdmin, loginAdmin, getData, refreshAccessToken };

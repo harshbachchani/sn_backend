@@ -3,6 +3,7 @@ import {
   registerAdmin,
   loginAdmin,
   getData,
+  refreshAccessToken,
 } from "../controllers/admin/admin.controller.js";
 import {
   getUserAccountRequests,
@@ -15,6 +16,7 @@ const router = Router();
 
 router.route("/register").post(registerAdmin);
 router.route("/login").post(loginAdmin);
+router.route("/refreshtoken").post(refreshAccessToken);
 router.route("/data").get(verifyAgentJWT, verifyAdmin, getData);
 router
   .route("/user/account/requests/:userId")
