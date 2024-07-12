@@ -1,6 +1,5 @@
 import { asyncHandler } from "../../utils/asynHandler.js";
 import { ApiError } from "../../utils/ApiError.js";
-import { User } from "../../models/user/user.model.js";
 import { ApiResponse } from "../../utils/ApiResponse.js";
 import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
@@ -45,7 +44,7 @@ const registerAdmin = asyncHandler(async (req, res, next) => {
       voterId
     )
   ) {
-    throw new ApiError(400, "All fields are required");
+    return next(new ApiError(400, "All fields are required"));
   }
 
   try {
@@ -128,14 +127,6 @@ const loginAdmin = asyncHandler(async (req, res, next) => {
   }
 });
 
-const getData = asyncHandler(async (req, res) => {
-  if (!req.agent) throw new ApiError(403, "Admin not found");
-
-  return res
-    .status(200)
-    .json(new ApiResponse(200, req.agent, "Admin data fetched Successfully"));
-});
-
 const refreshAccessToken = asyncHandler(async (req, res, next) => {
   const incomingtoken = req.body.refreshToken;
   if (!incomingrefreshtoken) {
@@ -178,4 +169,4 @@ const refreshAccessToken = asyncHandler(async (req, res, next) => {
     );
   }
 });
-export { registerAdmin, loginAdmin, getData, refreshAccessToken };
+export { registerAdmin, loginAdmin, refreshAccessToken };

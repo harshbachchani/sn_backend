@@ -7,12 +7,21 @@ const nomineeSchema = new Schema(
       required: [true, "Full name is required"],
       trim: true,
     },
-    aadharNo: {
-      type: Number,
-      required: [true, "Aadhar number is required"],
+    panNo: {
+      type: String,
+      required: [true, "Pan number is required"],
       trim: true,
       unique: true,
       index: true,
+    },
+    relation: {
+      type: String,
+      required: [true, "Relation is required"],
+      trim: true,
+    },
+    dob: {
+      type: Date,
+      required: [true, "DOB of nominee is required"],
     },
     phoneNo: {
       type: Number,
@@ -21,21 +30,7 @@ const nomineeSchema = new Schema(
       unique: true,
       index: true,
     },
-    accountNo: {
-      type: mongoose.Types.ObjectId,
-      ref: "Account",
-      required: [true, "Account number is required"],
-    },
-    relation: {
-      type: String,
-      required: [true, "Relation is required"],
-      trim: true,
-    },
-    ifsc: {
-      type: String,
-      required: [true, "IFSC code is required"],
-      trim: true,
-    },
+
     user: {
       type: mongoose.Types.ObjectId,
       ref: "User",
@@ -48,4 +43,4 @@ const nomineeSchema = new Schema(
   { timestamps: true }
 );
 
-export const nominee = mongoose.model("Nominee", nomineeSchema);
+export const Nominee = mongoose.model("Nominee", nomineeSchema);

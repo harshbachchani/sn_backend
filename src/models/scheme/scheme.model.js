@@ -1,39 +1,59 @@
 import mongoose, { Schema } from "mongoose";
 
-const schemeSchema = new Schema(
-  {
-    amount: {
-      type: Number,
-      required: [true, "Amount is required"],
-    },
-    tenure: {
-      type: Number,
-      required: [true, "Tenure is required"],
-    },
-    maturityAmount: {
-      type: Number,
-    },
-    schemeType: {
-      type: String,
-      enum: ["Monthly", "Recurring", "Fixed", "Daily"],
-      required: [true, "Scheme Type is required"],
-    },
-    nominee: {
-      type: mongoose.Types.ObjectId,
-      ref: "Nominee",
-      required: [true, "Nominee is required"],
-    },
-    account: {
-      type: mongoose.Types.ObjectId,
-      ref: "Account",
-      required: [true, "Account is required"],
-    },
-    user: {
-      type: mongoose.Types.ObjectId,
-      ref: "User",
-      required: [true, "User is required"],
-    },
+const schemeSchema = new Schema({
+  payableAmount: {
+    type: Number,
+    required: [true, "payable Amount is required"],
   },
-  { timestamps: true }
-);
+  tenure: {
+    type: Date,
+    required: [true, "Tenure is required"],
+  },
+  maturityAmount: {
+    type: Number,
+    required: [true, "Maturity Amount is required"],
+  },
+  statement: {
+    type: Buffer,
+    required: [true, "Bank Statement is required"],
+  },
+  type: {
+    type: String,
+    enum: ["Monthly", "Recurring", "Fixed", "Weekly"],
+    required: [true, "Scheme Type is required"],
+  },
+  totalAmount: {
+    //total amount user has paid so far
+    type: Number,
+    default: 0,
+  },
+  remainingAmount: {
+    //remaining amount user has to pay
+    type: Number,
+    default: 0,
+  },
+  status: {
+    type: String,
+    enum: ["Active", "Completed", "Pending", "Overdue"],
+    default: "Pending",
+  },
+  penalty: Number,
+  purpose: String,
+  monthlyIncome: Number,
+  schemeStartDate: Date,
+  schemeEndDate: Date,
+  nextPaymentDueDate: Date,
+  nomineeId: {
+    type: mongoose.Types.ObjectId,
+    ref: "Nominee",
+  },
+  accountId: {
+    type: mongoose.Types.ObjectId,
+    ref: "Account",
+  },
+  userId: {
+    type: mongoose.Types.ObjectId,
+    ref: "User",
+  },
+});
 export const Scheme = mongoose.model("Scheme", schemeSchema);

@@ -1,11 +1,12 @@
 import mongoose from "mongoose";
 import { asyncHandler } from "../../utils/asynHandler.js";
 import { ApiError } from "../../utils/ApiError.js";
-import { Account } from "../../models/user/account.model.js";
+import { Account } from "../../models/scheme/account.model.js";
 import { User } from "../../models/user/user.model.js";
 import { Document } from "../../models/user/document.model.js";
 import { ApiResponse } from "../../utils/ApiResponse.js";
 import { deletefromCloudinary } from "../../utils/cloudinary.js";
+import { Notification } from "../../models/other/notification.model.js";
 
 const getUserDetail = asyncHandler(async (req, res, next) => {
   const { userId } = req.params;
@@ -121,6 +122,7 @@ const getUserAccountRequests = asyncHandler(async (req, res, next) => {
           email: 1,
           dob: 1,
           fullname: 1,
+          "accountInfo.photo": 1,
           "accountInfo.address1": 1,
           "accountInfo.address2": 1,
           "accountInfo.city": 1,
@@ -154,7 +156,22 @@ const verifyAccountRequest = asyncHandler(async (req, res, next) => {
       },
       { new: true }
     )
-      .then((data) => {
+      .then(async (data) => {
+        const deletednotification = await Notification.deleteMany({
+          userId,
+          role: "Admin",
+          type: "Saving",
+        });
+        console.log(deletednotification);
+        const notification = await Notification.create({
+          role: "User",
+          title: "Saving Approval",
+          type: "Saving",
+          userId: userId,
+          accountId: account._id,
+        });
+        if (!notification)
+          return next(new ApiError(504, "Error in creating notification"));
         return res
           .status(200)
           .json(
