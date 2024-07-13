@@ -4,6 +4,7 @@ dotenv.config({ path: "./.env" });
 
 import connectDB from "./db/index.js";
 import { app, httpServer } from "./app.js";
+import { Notification } from "./models/other/notification.model.js";
 
 connectDB()
   .then((value) => {
@@ -12,9 +13,13 @@ connectDB()
       console.log("Error in running app ", err);
       process.exit(1);
     });
-    // cron.schedule("*/10 * * * * *", () => {
-    //   console.log("running every minute 1, 2, 4 and 5");
-    // });
+    cron.schedule("0 0 * * *", async () => {
+      await Notification.create({
+        title: "Hello world",
+        type: "Saving",
+        role: "User",
+      });
+    });
     httpServer.listen(myport, () => {
       console.log(`Server is running at ${myport}`);
     });
