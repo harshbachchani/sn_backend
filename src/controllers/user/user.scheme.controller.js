@@ -29,6 +29,7 @@ const createScheme = asyncHandler(async (req, res, next) => {
       panNo,
       dob,
       relation,
+      totalAmount,
     } = req.body;
     if (
       !(
@@ -40,18 +41,15 @@ const createScheme = asyncHandler(async (req, res, next) => {
         phoneNo ||
         panNo ||
         relation ||
-        dob
+        dob ||
+        totalAmount
       )
     ) {
       return next(new ApiError(400, "All Fields Are Required"));
     }
     const parsedob = moment(dob, "YYYY-MM-DD", true);
-    const parsetenure = moment(tenure, "YYYY-MM-DD", true);
     if (!parsedob.isValid()) {
       return next(new ApiError(400, "Invalid date format for dob"));
-    }
-    if (!parsetenure.isValid()) {
-      return next(new ApiError(400, "Invalid date format for tenure"));
     }
     let nominee = await Nominee.findOne({ phoneNo: phoneNo });
 
@@ -82,11 +80,11 @@ const createScheme = asyncHandler(async (req, res, next) => {
       );
     const scheme = await Scheme.create({
       payableAmount: amount,
-      tenure: parsetenure.toDate(),
+      tenure,
       maturityAmount,
       statement: statementlocalpath,
       type,
-      remainingAmount: 96000, //change according to how much user has to pay
+      remainingAmount: maturityAmount - totalAmount, //change according to how much user has to pay
       nomineeId: nominee._id,
       accountId: user.account,
       userId: user._id,

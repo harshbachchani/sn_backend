@@ -7,18 +7,15 @@ import jwt from "jsonwebtoken";
 const verifyUserJWT = asyncHandler(async (req, _, next) => {
   try {
     const token = req.header("Authorization")?.replace("Bearer ", "");
-    if (!token) throw new ApiError(401, "Unauthorized request");
+    if (!token) return next(new ApiError(401, "Unauthorized request"));
     const decodedtoken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
-    const user = await User.findById(decodedtoken?._id).select(
-      "-verified -refreshToken"
-    );
-    // console.log(user);
-    if (!user) throw new ApiError(401, "Invalid Access Token");
-
+    const user = await User.findById(decodedtoken?._id).select("-refreshToken");
+    if (!user) return next(new ApiError(401, "Invalid Access Token"));
+    if (!user.verified) return next(new ApiError(400, "User is not verified"));
     req.user = user;
     next();
   } catch (error) {
-    throw new ApiError(401, error?.message || "Invalid Access Token");
+    return next(new ApiError(401, error?.message || "Invalid Access Token"));
   }
 });
 const verifyAgentJWT = asyncHandler(async (req, _, next) => {

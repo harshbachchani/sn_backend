@@ -6,7 +6,7 @@ const schemeSchema = new Schema({
     required: [true, "payable Amount is required"],
   },
   tenure: {
-    type: Date,
+    type: Number,
     required: [true, "Tenure is required"],
   },
   maturityAmount: {

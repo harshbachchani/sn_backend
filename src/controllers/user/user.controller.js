@@ -89,13 +89,87 @@ const verifyUserOtp = asyncHandler(async (req, res, next) => {
         { verified: true, refreshToken: refreshtoken },
         { new: true, runValidators: true }
       );
+      const userDetail = await User.aggregate([
+        {
+          $match: {
+            _id: new mongoose.Types.ObjectId(user._id),
+          },
+        },
+        {
+          $lookup: {
+            from: "accounts",
+            localField: "account",
+            foreignField: "_id",
+            as: "account",
+            pipeline: [
+              {
+                $lookup: {
+                  from: "documents",
+                  localField: "panno",
+                  foreignField: "_id",
+                  as: "pandetail",
+                },
+              },
+              {
+                $lookup: {
+                  from: "documents",
+                  localField: "aadharno",
+                  foreignField: "_id",
+                  as: "aadhardetail",
+                },
+              },
+              {
+                $addFields: {
+                  pandetail: { $arrayElemAt: ["$pandetail", 0] },
+                  aadhardetail: { $arrayElemAt: ["$aadhardetail", 0] },
+                },
+              },
+              {
+                $project: {
+                  _id: 1, //treated as account no
+                  address1: 1,
+                  address2: 1,
+                  city: 1,
+                  state: 1,
+                  zip: 1,
+                  emp_type: 1,
+                  income: 1,
+                  signature: 1,
+                  photo: 1,
+                  "pandetail.docno": 1,
+                  "pandetail.url": 1,
+                  "pandetail.type": 1,
+                  "aadhardetail.docno": 1,
+                  "aadhardetail.url": 1,
+                  "aadhardetail.type": 1,
+                },
+              },
+            ],
+          },
+        },
+        {
+          $unwind: "$account",
+        },
+        {
+          $project: {
+            _id: 1,
+            phoneno: 1,
+            dob: 1,
+            email: 1,
+            fullname: 1,
+            account: 1,
+          },
+        },
+      ]);
+      if (!userDetail)
+        return next(new ApiError(404, "Cannot get details of user"));
       res
         .status(200)
         .json(
           new ApiResponse(
             200,
-            { newuser, accesstoken },
-            "User Registered Successfully"
+            { user: userDetail[0], accesstoken, refreshtoken },
+            "User Verified Successfully"
           )
         );
     } else {
