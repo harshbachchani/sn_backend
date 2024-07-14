@@ -1,6 +1,5 @@
 import { asyncHandler } from "../../utils/asynHandler.js";
 import { ApiError } from "../../utils/ApiError.js";
-import { User } from "../../models/user/user.model.js";
 import { Account } from "../../models/scheme/account.model.js";
 import { ApiResponse } from "../../utils/ApiResponse.js";
 import mongoose from "mongoose";
@@ -16,9 +15,7 @@ const createScheme = asyncHandler(async (req, res, next) => {
     const account = await Account.findOne({ user: user._id });
     if (account.status == "Pending")
       return next(new ApiError(400, "User Saving Account not verified"));
-    const statementlocalpath = req.file?.buffer;
-    if (!statementlocalpath)
-      return next(new ApiError(400, "Cannot get local path of statement"));
+
     const {
       amount,
       tenure,
@@ -78,13 +75,12 @@ const createScheme = asyncHandler(async (req, res, next) => {
       payableAmount: amount,
       tenure,
       maturityAmount,
-      statement: statementlocalpath,
       type,
       remainingAmount: totalAmount, //change according to how much user has to pay
       nomineeId: nominee._id,
       accountId: user.account,
       userId: user._id,
-    }).select("-statement");
+    });
 
     if (!scheme) return next(new ApiError(500, "Error in creating scheme"));
 
@@ -118,11 +114,8 @@ const getSchemeDetail = asyncHandler(async (req, res, next) => {
     if (!mongoose.Types.ObjectId.isValid(schemeId))
       return next(new ApiError(404, "Invalid scheme Id"));
 
-    const scheme = await Scheme.findById(schemeId).select("-statement");
+    const scheme = await Scheme.findById(schemeId);
     if (!scheme) return next(new ApiError(404, "Cannot get scheme"));
-    // const base64Image = scheme.statement.toString("base64");
-    // const imgSrc = `data:${scheme.statement.contentType};base64,${base64Image}`;
-    // return res.render("image", { imgSrc });
     return res
       .status(200)
       .json(

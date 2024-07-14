@@ -13,10 +13,6 @@ const schemeSchema = new Schema({
     type: Number,
     required: [true, "Maturity Amount is required"],
   },
-  statement: {
-    type: Buffer,
-    required: [true, "Bank Statement is required"],
-  },
   type: {
     type: String,
     enum: ["Monthly", "Recurring", "Fixed", "Weekly"],

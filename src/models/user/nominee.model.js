@@ -30,15 +30,6 @@ const nomineeSchema = new Schema(
       unique: true,
       index: true,
     },
-
-    user: {
-      type: mongoose.Types.ObjectId,
-      ref: "User",
-    },
-    scheme: {
-      type: mongoose.Types.ObjectId,
-      ref: "Scheme",
-    },
   },
   { timestamps: true }
 );

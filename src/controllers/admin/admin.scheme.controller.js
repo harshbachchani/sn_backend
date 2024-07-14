@@ -193,4 +193,6 @@ const getUserSchemeDetail = asyncHandler(async (req, res, next) => {
     return next(new ApiError(500, "Internal Server Error", error));
   }
 });
-export { getAllSchemeRequests, getUserSchemeDetail };
+
+const verifySchemeRequest = asyncHandler(async (req, res, next) => {});
+export { getAllSchemeRequests, getUserSchemeDetail, verifySchemeRequest };
