@@ -4,6 +4,7 @@ import { ApiResponse } from "../../utils/ApiResponse.js";
 import mongoose from "mongoose";
 import { Scheme } from "../../models/scheme/scheme.model.js";
 import { Notification } from "../../models/other/notification.model.js";
+import { User } from "../../models/user/user.model.js";
 
 const getAllSchemeRequests = asyncHandler(async (req, res, next) => {
   try {
@@ -194,5 +195,84 @@ const getUserSchemeDetail = asyncHandler(async (req, res, next) => {
   }
 });
 
-const verifySchemeRequest = asyncHandler(async (req, res, next) => {});
-export { getAllSchemeRequests, getUserSchemeDetail, verifySchemeRequest };
+const verifySchemeRequest = asyncHandler(async (req, res, next) => {
+  try {
+    const { schemeId } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(schemeId))
+      return next(new ApiError(400, "Invalid Scheme Id"));
+    const scheme = await Scheme.findById(schemeId);
+    if (!scheme) return next(new ApiError(400, "Scheme not found"));
+    if (scheme.status != "Pending")
+      return next(new ApiError(400, "Scheme is already approved or completed"));
+    const endDate = new Date();
+    endDate.setMonth(endDate.getMonth() + scheme.tenure);
+
+    const approvedscheme = await Scheme.findByIdAndUpdate(
+      schemeId,
+      {
+        status: "Active",
+        schemeStartDate: new Date(),
+        schemeEndDate: endDate,
+      },
+      { new: true }
+    );
+    if (!approvedscheme)
+      return next(new ApiError(500, "Error in Approving scheme "));
+    const user = await User.findById(scheme.userId);
+    const notification = await Notification.create({
+      title: "Scheme Approved",
+      message: "Your scheme has been approved",
+      type: "scheme",
+      userId: user._id,
+      accountId: user.account,
+      schemeId,
+      role: "User",
+    });
+    if (!notification)
+      return next(new ApiError(500, "Error in creating notification"));
+    const deleteNotification = await Notification.deleteMany({
+      schemeId: scheme._id,
+    });
+    if (!deleteNotification)
+      return next(new ApiError(500, "Error in deleting notification"));
+    console.log(deleteNotification);
+    return res
+      .status(200)
+      .json(new ApiResponse(200, "Scheme has been approved"));
+  } catch (error) {
+    return next(new ApiError(500, "Internal Server Error", error));
+  }
+});
+
+const deleteSchemeRequest = asyncHandler(async (req, res, next) => {
+  try {
+    const { schemeId } = req.params;
+    const { reason } = req.body;
+    if (!mongoose.Types.ObjectId.isValid(schemeId))
+      return next(new ApiError(400, "Invalid Scheme Id"));
+    const scheme = await Scheme.findById(schemeId);
+    if (!scheme) return next(new ApiError(400, "Scheme not found"));
+    await Notification.deleteMany({
+      schemeId: scheme._id,
+    });
+    await Scheme.findByIdAndDelete(schemeId);
+    const notification = await Notification.create({
+      title: "Scheme Request Rejected",
+      message: reason,
+      type: "Scheme",
+      userId: scheme.userId,
+      accountId: scheme.accountId,
+      role: "User",
+    });
+    if (!notification) return next(504, "Unable to create notification");
+    return res.status(200).json(new ApiResponse(200, "Scheme Request deleted"));
+  } catch (error) {
+    return next(new ApiError(500, "Internal Server Error", error));
+  }
+});
+export {
+  getAllSchemeRequests,
+  getUserSchemeDetail,
+  verifySchemeRequest,
+  deleteSchemeRequest,
+};

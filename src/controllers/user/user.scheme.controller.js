@@ -63,7 +63,6 @@ const createScheme = asyncHandler(async (req, res, next) => {
         dob,
         phoneNo,
         relation,
-        user: user._id,
       });
     }
 
