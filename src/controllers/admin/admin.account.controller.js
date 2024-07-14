@@ -162,11 +162,11 @@ const verifyAccountRequest = asyncHandler(async (req, res, next) => {
           role: "Admin",
           type: "Saving",
         });
-        console.log(deletednotification);
         const notification = await Notification.create({
           role: "User",
           title: "Saving Approval",
           type: "Saving",
+          message: "Saving Account approval request",
           userId: userId,
           accountId: account._id,
         });

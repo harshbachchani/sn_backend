@@ -1,5 +1,4 @@
 import dotenv from "dotenv";
-import cron from "node-cron";
 dotenv.config({ path: "./.env" });
 
 import connectDB from "./db/index.js";
@@ -13,13 +12,14 @@ connectDB()
       console.log("Error in running app ", err);
       process.exit(1);
     });
-    cron.schedule("40 12 * * *", async () => {
-      await Notification.create({
-        title: "Hello world",
-        type: "Saving",
-        role: "User",
-      });
-    });
+    //only for server function(hosting)
+    // cron.schedule("40 12 * * *", async () => {
+    //   await Notification.create({
+    //     title: "Hello world",
+    //     type: "Saving",
+    //     role: "User",
+    //   });
+    // });
     httpServer.listen(myport, () => {
       console.log(`Server is running at ${myport}`);
     });

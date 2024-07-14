@@ -7,15 +7,15 @@ import mongoose from "mongoose";
 import { Nominee } from "../../models/user/nominee.model.js";
 import { Scheme } from "../../models/scheme/scheme.model.js";
 import { Notification } from "../../models/other/notification.model.js";
-import moment from "moment";
 
 const createScheme = asyncHandler(async (req, res, next) => {
   try {
-    const user = await User.findById(req.user._id);
-    if (!user) return next(new ApiError(404, "Cannot get user wrong user id"));
-
+    const user = req.user;
     if (!user.account || !mongoose.Types.ObjectId.isValid(user.account))
       return next(new ApiError(404, "User saving account do not exist"));
+    const account = await Account.findOne({ user: user._id });
+    if (account.status == "Pending")
+      return next(new ApiError(400, "User Saving Account not verified"));
     const statementlocalpath = req.file?.buffer;
     if (!statementlocalpath)
       return next(new ApiError(400, "Cannot get local path of statement"));
@@ -47,17 +47,12 @@ const createScheme = asyncHandler(async (req, res, next) => {
     ) {
       return next(new ApiError(400, "All Fields Are Required"));
     }
-    const parsedob = moment(dob, "YYYY-MM-DD", true);
-    if (!parsedob.isValid()) {
-      return next(new ApiError(400, "Invalid date format for dob"));
-    }
-    let nominee = await Nominee.findOne({ phoneNo: phoneNo });
 
+    let nominee = await Nominee.findOne({ phoneNo: phoneNo });
     if (nominee) {
       if (
         nominee.panNo != panNo ||
-        nominee.dob.toISOString().split("T")[0] !==
-          parsedob.format("YYYY-MM-DD") ||
+        nominee.dob.toISOString().split("T")[0] != dob ||
         nominee.fullName != fullName
       ) {
         return next(
@@ -68,12 +63,13 @@ const createScheme = asyncHandler(async (req, res, next) => {
       nominee = await Nominee.create({
         fullName,
         panNo,
-        dob: parsedob.toDate(),
+        dob,
         phoneNo,
         relation,
         user: user._id,
       });
     }
+
     if (!nominee)
       return next(
         new ApiError(500, "Internal Server Error In creating nominee", error)
@@ -84,20 +80,24 @@ const createScheme = asyncHandler(async (req, res, next) => {
       maturityAmount,
       statement: statementlocalpath,
       type,
-      remainingAmount: maturityAmount - totalAmount, //change according to how much user has to pay
+      remainingAmount: totalAmount, //change according to how much user has to pay
       nomineeId: nominee._id,
       accountId: user.account,
       userId: user._id,
-    }).select(" -statement ");
-    if (!scheme) return new ApiError(500, "Error in creating scheme");
+    }).select("-statement");
+
+    if (!scheme) return next(new ApiError(500, "Error in creating scheme"));
+
     const notification = await Notification.create({
       type: "Scheme",
       title: "Scheme Request",
+      message: "Scheme request approval from user",
       userId: user._id,
       role: "Admin",
       accountId: user.account,
       schemeId: scheme._id,
     });
+
     if (!notification)
       return next(new ApiError(500, "Error in creating Notification"));
     return res
@@ -113,8 +113,8 @@ const getSchemeDetail = asyncHandler(async (req, res, next) => {
     const userId = req.user._id;
     if (!mongoose.Types.ObjectId.isValid(userId))
       return next(new ApiError(404, "Invalid User Id"));
-    const schemeId = req.query.schemeId;
-
+    const { schemeId } = req.body;
+    console.lop;
     if (!mongoose.Types.ObjectId.isValid(schemeId))
       return next(new ApiError(404, "Invalid scheme Id"));
 

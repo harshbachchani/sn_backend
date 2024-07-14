@@ -6,6 +6,10 @@ const notificationSchema = new Schema(
       type: String,
       required: [true, "Title is required"],
     },
+    message: {
+      type: String,
+      required: [true, "Message is required"],
+    },
     type: {
       type: String,
       index: true,
