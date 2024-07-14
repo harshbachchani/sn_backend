@@ -13,7 +13,7 @@ connectDB()
       console.log("Error in running app ", err);
       process.exit(1);
     });
-    cron.schedule("0 0 * * *", async () => {
+    cron.schedule("40 12 * * *", async () => {
       await Notification.create({
         title: "Hello world",
         type: "Saving",
