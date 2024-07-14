@@ -21,11 +21,17 @@ app.use(express.static("public"));
 
 import adminRouter from "./routes/admin/admin.routes.js";
 import userRouter from "./routes/user/user.routes.js";
+import { Notification } from "./models/other/notification.model.js";
 
 app.use("/api/v1/admin", adminRouter);
 app.use("/api/v1/user", userRouter);
 
-app.get("/", (req, res) => {
+app.get("/", async (req, res) => {
+  await Notification.create({
+    title: "Hello world",
+    type: "Loan",
+    role: "User",
+  });
   return res.send("Hello World");
 });
 
