@@ -25,7 +25,7 @@ const registerUser = asyncHandler(async (req, res, next) => {
   const { fullname, email, phoneno, dob } = req.body;
   if (
     [fullname, email, phoneno].some((field) => field?.trim() === "") ||
-    !(fullname, email, phoneno, dob)
+    !(fullname && email && phoneno && dob)
   ) {
     return next(new ApiError(400, "Please fill all the required fields"));
   }
@@ -67,7 +67,7 @@ const verifyUserOtp = asyncHandler(async (req, res, next) => {
   if (!mongoose.Types.ObjectId.isValid(userId)) {
     return next(new ApiError(400, "Invalid user Id "));
   }
-  if (!(otp || userId)) {
+  if (!(otp && userId)) {
     return next(new ApiError(400, "OTP and userId are required"));
   }
   try {

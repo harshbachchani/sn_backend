@@ -28,17 +28,18 @@ const createScheme = asyncHandler(async (req, res, next) => {
       relation,
       totalAmount,
     } = req.body;
+
     if (
       !(
-        amount ||
-        tenure ||
-        maturityAmount ||
-        type ||
-        fullName ||
-        phoneNo ||
-        panNo ||
-        relation ||
-        dob ||
+        amount &&
+        tenure &&
+        maturityAmount &&
+        type &&
+        fullName &&
+        phoneNo &&
+        panNo &&
+        relation &&
+        dob &&
         totalAmount
       )
     ) {

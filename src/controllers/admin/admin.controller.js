@@ -34,13 +34,13 @@ const registerAdmin = asyncHandler(async (req, res, next) => {
   } = req.body;
   if (
     !(
-      fullName ||
-      email ||
-      phoneNo ||
-      dob ||
-      address ||
-      panNo ||
-      aadharNo ||
+      fullName &&
+      email &&
+      phoneNo &&
+      dob &&
+      address &&
+      panNo &&
+      aadharNo &&
       voterId
     )
   ) {
@@ -79,7 +79,7 @@ const registerAdmin = asyncHandler(async (req, res, next) => {
 
 const loginAdmin = asyncHandler(async (req, res, next) => {
   const { userId, password } = req.body;
-  if (!(password || userId)) {
+  if (!(password && userId)) {
     return next(new ApiError(400, "All field are required"));
   }
   if (!mongoose.Types.ObjectId.isValid(userId)) {
@@ -87,7 +87,7 @@ const loginAdmin = asyncHandler(async (req, res, next) => {
   }
   try {
     const myadmin = await Agent.findById(userId);
-    if (!(myadmin || myadmin.role != "Admin")) {
+    if (!(myadmin && myadmin.role != "Admin")) {
       return next(new ApiError(404, "Admin do not exist"));
     }
     const ispasswordmatch = await myadmin.isPassWordCorrect(password);
@@ -149,7 +149,7 @@ const refreshAccessToken = asyncHandler(async (req, res, next) => {
     }
 
     res.setHeader("Authorization", `Bearer ${result.data.accessToken}`);
-    await Agent.findByIdAndUpdate(myagent._id, {
+    await Agent.findByIdAndUpdate(myadmin._id, {
       refreshToken: result.data.refreshToken,
     });
 

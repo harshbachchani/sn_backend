@@ -18,15 +18,10 @@ const createAccount = asyncHandler(async (req, res, next) => {
     panno,
     aadharno,
   } = req.body;
-  if (
-    !(address1 || address2 || city || state || zip || emp_type || income) ||
-    [address1, address2, city, state, zip, emp_type, income].some(
-      (field) => field?.trim() === ""
-    )
-  ) {
+  if (!(address1 && address2 && city && state && zip && emp_type && income)) {
     return next(new ApiError(404, "All Fields Are required"));
   }
-  if (!(panno || aadharno))
+  if (!(panno && aadharno))
     return next(new ApiError(404, "Pan and Aadhar details are required"));
   const user = req?.user;
   if (!user) return next(404, "Cannot find user");
@@ -38,7 +33,7 @@ const createAccount = asyncHandler(async (req, res, next) => {
   const photolocalpath = req.files?.photo?.[0].buffer;
   const signaturelocalpath = req.files?.signature?.[0].buffer;
   if (
-    !(panlocalpath || aadharlocalpath || photolocalpath || signaturelocalpath)
+    !(panlocalpath && aadharlocalpath && photolocalpath && signaturelocalpath)
   ) {
     return next(new ApiError(404, "Cannot get localpath of uploaded files"));
   }
