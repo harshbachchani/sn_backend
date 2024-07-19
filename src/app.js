@@ -1,6 +1,7 @@
 import { createServer } from "http";
 import express from "express";
 import cors from "cors";
+import cookieParser from "cookie-parser";
 const app = express();
 const httpServer = createServer(app);
 
@@ -8,6 +9,7 @@ import { errHandler } from "./middlewares/err.middleware.js";
 app.use(
   cors({
     origin: process.env.CORS_ORIGIN,
+    credentials: true,
   })
 );
 app.use(
@@ -18,6 +20,7 @@ app.use(
 
 app.use(express.urlencoded({ extended: true, limit: "16KB" }));
 app.use(express.static("public"));
+app.use(cookieParser());
 
 import adminRouter from "./routes/admin/admin.routes.js";
 import userRouter from "./routes/user/user.routes.js";
