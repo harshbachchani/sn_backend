@@ -1,7 +1,4 @@
 import mongoose, { Schema } from "mongoose";
-{
-}
-
 const guarantorSchema = new Schema(
   {
     fullname: {
@@ -21,6 +18,10 @@ const guarantorSchema = new Schema(
       type: Schema.Types.ObjectId,
       ref: "Loan",
     },
+    relation: {
+      type: String,
+      ref: "User",
+    }
   },
   { timestamps: true }
 );

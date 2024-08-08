@@ -22,4 +22,4 @@ const propertySchema = new Schema(
   { timestamps: true }
 );
 
-export const PropertyLoan = Loan.discriminator("propertyloan", propertySchema);
+export const PropertyLoan = Loan.discriminator("PropertyLoan", propertySchema);

@@ -2,29 +2,25 @@ import mongoose, { Schema } from "mongoose";
 
 const loanSchema = new Schema(
   {
-    amount: {
-      type: Number,
-      required: [true, "Amount is required"],
+    userDetails: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
     },
-    tenure: {
-      type: Number,
-      required: [true, "Tenure is required"],
+    accountDetails: {
+      type: Schema.Types.ObjectId,
+      ref: "Account",
     },
-    enddate: {
-      type: Date,
+    guarantorDetails: {
+      type: Schema.Types.ObjectId,
+      ref: "Guarantor",
     },
-    purpose: {
-      type: String,
-      required: [true, "Purpose of Loan is required"],
-      trim: true,
+    loanId:{
+      type:Schema.Types.ObjectId,
+      ref: "AllLoans",
     },
     status: {
       type: String,
       enum: ["Active", "Closed"],
-    },
-    user: {
-      type: Schema.Types.ObjectId,
-      ref: "User",
     },
   },
   { timestamps: true, discriminatorKey: "type" }
