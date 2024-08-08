@@ -22,9 +22,12 @@ const microFinanceSchema = new Schema(
       type: String,
       required: [true, "Shop address is required"],
     },
-    guarantor: {
-      type: Schema.Types.ObjectId,
-      ref: "Gurantor",
+    presentAddress: {
+      type: String,
+    },
+    yearInBusiness: {
+      type: Number,
+      required: [true, "Years required"],
     },
   },
   {
