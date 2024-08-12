@@ -36,6 +36,6 @@ const microFinanceSchema = new Schema(
 );
 
 export const MicroFinanceLoan = Loan.discriminator(
-  "microfinanceloan",
+  "MicroFinanceLoan",
   microFinanceSchema
 );

@@ -1,19 +1,19 @@
 import { Schema } from "mongoose";
-import { Loan } from "./loan.model";
+import { Loan } from "./loan.model.js";
 
 const selfBusinessSchema = new Schema(
   {
     businessType: {
       type: String,
-      required: [true, "Purpose is required"],
+      required: [true, "Businees Type is required"],
     },
     netProfitAmount: {
       type: Number,
-      required: [true, "Requested Amount is required"],
+      required: [true, "net Profit Amount is required"],
     },
     officePin: {
       type: Number,
-      required: [true, "Requested Amount is required"],
+      required: [true, "Office Pin is required"],
     },
     panCardNumber: {
       type: Number,
@@ -35,4 +35,7 @@ const selfBusinessSchema = new Schema(
   { timestamps: true }
 );
 
-export const SelfBusinessLoan = Loan.discriminator("SelfBusinessLoan", selfBusinessSchema);
+export const SelfBusinessLoan = Loan.discriminator(
+  "SelfBusinessLoan",
+  selfBusinessSchema
+);

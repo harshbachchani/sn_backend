@@ -1,5 +1,5 @@
 import { Schema } from "mongoose";
-import { Loan } from "./loan.model";
+import { Loan } from "./loan.model.js";
 
 const instantSchema = new Schema(
   {

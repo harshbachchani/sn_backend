@@ -1,7 +1,6 @@
 import { asyncHandler } from "../../utils/asynHandler.js";
 import { ApiError } from "../../utils/ApiError.js";
 import { ApiResponse } from "../../utils/ApiResponse.js";
-import mongoose from "mongoose";
 import { Notification } from "../../models/other/notification.model.js";
 
 const getAllNotifications = asyncHandler(async (req, res, next) => {
